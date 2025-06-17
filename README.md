@@ -52,7 +52,8 @@ docker build -t 5breeze/magnet-rss .
 ```bash
 #直接拉取镜像使用（当前支持AMD64、arm64、armv7）
 # Run directly.
-docker run -d -p 5000:5000 5breeze/magnet-rss
+docker run -d -p 5000:5000 --name magnet-rss 5breeze/magnet-rss:main
+
 ```
 
 ---
