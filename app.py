@@ -147,13 +147,14 @@ def generate_rss(items):
         rss += f'''
 <item>
 <title>{item['title']}</title>
-<link>{item['link']}</link>
-<guid isPermaLink="false">{item['guid']}</guid>
+<link>{saxutils.escape(item['link'])}</link>
+<guid isPermaLink="false">{saxutils.escape(item['guid'])}</guid>
 <pubDate>{item['pubDate']}</pubDate>
 </item>
 '''
     rss += '</channel></rss>'
     return rss
+
 
 # --- 自动刷新线程 ---
 def auto_refresh():
