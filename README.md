@@ -33,8 +33,8 @@ python app.py
 ### 🐳 使用 Docker 部署
 
 ```bash
-docker build -t yourname/magnet-rss .
-docker run -d -p 5000:5000 yourname/magnet-rss
+docker build -t 5breeze/magnet-rss .
+docker run -d -p 5000:5000 5breeze/magnet-rss
 ```
 
 ---
