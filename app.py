@@ -38,7 +38,6 @@ def requires_auth(f):
             try:
                 scheme, credentials = auth.split(None, 1)
                 if scheme.lower() == 'basic':
-                    # 增加编码异常处理
                     try:
                         decoded = b64decode(credentials).decode('utf-8')
                         username, password = decoded.split(':', 1)
@@ -48,7 +47,6 @@ def requires_auth(f):
                         print(f"认证解码错误: {e}")
             except Exception as e:
                 print(f"认证处理异常: {e}")
-        # 调试用：打印未授权信息
         print("未授权访问请求")
         return authenticate()
     return decorated
@@ -62,19 +60,11 @@ def load_config():
             'auth_user': 'admin',
             'auth_pass': 'admin'
         }
-        try:
-            with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
-                json.dump(default_config, f, ensure_ascii=False, indent=2)
-        except Exception as e:
-            print(f"配置文件创建失败: {e}")
-            # 开发环境下直接返回默认配置
-            return default_config
-    try:
-        with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
-            return json.load(f)
-    except Exception as e:
-        print(f"配置文件读取失败: {e}")
-        return {'urls': [], 'refresh_interval': 1, 'auth_user': 'admin', 'auth_pass': 'admin'}
+        with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
+            json.dump(default_config, f, ensure_ascii=False, indent=2)
+        return default_config
+    with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
+        return json.load(f)
 
 def save_config(config):
     with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
@@ -100,8 +90,7 @@ def encode_magnet_dn(href):
         dn_value = unquote(dn_value)
         dn_value_encoded = quote(dn_value, safe='')
         return f"dn={dn_value_encoded}"
-    href = re.sub(r'dn=([^&]*)', repl_dn, href)
-    return href
+    return re.sub(r'dn=([^&]*)', repl_dn, href)
 
 # --- 抓取磁力链接 ---
 def fetch_magnets():
@@ -155,13 +144,12 @@ def generate_rss(items):
     rss += '</channel></rss>'
     return rss
 
-
 # --- 自动刷新线程 ---
 def auto_refresh():
     while True:
         config = load_config()
         interval = config.get('refresh_interval', 1)
-        print(f"[定时刷新] {datetime.datetime.now()}, 间隔: {refresh_interval}分钟")
+        print(f"[定时刷新] {datetime.datetime.now()}, 间隔: {interval} 分钟")
         items = fetch_magnets()
         save_cache(items)
         time.sleep(interval * 60)
@@ -252,7 +240,7 @@ def index():
     </body>
     </html>
     '''
-    return render_template_string(html, urls=urls, items=items, refresh_interval=refresh_interval, message=message)
+    return render_template_string(html)
 
 @app.route('/add_url', methods=['POST'])
 @requires_auth
@@ -294,7 +282,7 @@ def set_interval():
     config = load_config()
     config['refresh_interval'] = interval
     save_config(config)
-    return redirect(url_for('index', msg=f'刷新间隔设置为{refresh_interval}分钟'))
+    return redirect(url_for('index', msg=f'刷新间隔设置为{interval}分钟'))
 
 @app.route('/refresh')
 @requires_auth
